@@ -12,6 +12,7 @@ namespace EpicLootLeslieAlphaTest.src.StatusEffects
         public int m_stacks = 0;
         public int m_maxStacks = 1; // make ME value
         private const float m_expire = 5f;
+        private float baseSpeed = 1f;
         private bool addedRetaliationSpeed = false;
         private bool amAttacking = false;
         private static readonly Dictionary<string, float> _animSpeeds = new()
@@ -25,7 +26,7 @@ namespace EpicLootLeslieAlphaTest.src.StatusEffects
             { "swing_longsword", 1.2f },
             { "mace_secondary", 1.35f },
             { "spear_poke", 1.2f },
-            { "sword_secondary", 0.4f },
+            { "sword_secondary", 0.5f },
             { "dualaxes", 1.1f },
             { "dualaxes_secondary", 1.1f },
             { "dual_knives", 1.1f },
@@ -42,6 +43,7 @@ namespace EpicLootLeslieAlphaTest.src.StatusEffects
             if (character.m_animator != null)
             {
                 m_maxStacks = Mathf.RoundToInt(Player.m_localPlayer.GetTotalActiveMagicEffectValue("Retaliation", 1f));
+                baseSpeed = character.m_animator.speed;
                 character.m_animator.speed = (Retaliation.AttackType != null && _animSpeeds.TryGetValue(Retaliation.AttackType, out float s)) ? s : 1.2f;
                 m_icon = ObjectDB.instance.GetItemPrefab("ShieldBanded")?.GetComponent<ItemDrop>()?.m_itemData.m_shared.m_icons[3];
                 m_name = "Retaliation";
@@ -89,7 +91,7 @@ namespace EpicLootLeslieAlphaTest.src.StatusEffects
             }
             if (m_stacks > 0 && !m_character.InAttack())
             {
-                m_character.m_animator.speed = 1f;
+                m_character.m_animator.speed = baseSpeed;
             }
             if (m_stacks <= 0 && !m_character.InAttack())
             {
@@ -100,11 +102,11 @@ namespace EpicLootLeslieAlphaTest.src.StatusEffects
 
         public override void Stop()
         {
+            base.Stop();
             if (m_character?.m_animator != null)
             {
-                m_character.m_animator.speed = 1f;
+                m_character.m_animator.speed = baseSpeed;
             }
-            base.Stop();
         }
 
         public override string GetIconText() // show stacks instead of timer

@@ -40,12 +40,12 @@ namespace EpicLootLeslieAlphaTest.src.MagicEffectss
             }
         }
 
-        [HarmonyPatch(typeof(Attack), nameof(Attack.OnAttackTrigger))]
+        [HarmonyPatch(typeof(Attack), nameof(Attack.Start))]
         public class Humanoid_Attack_Patch
         {
-            static void Prefix(Attack __instance)
+            static void Prefix(Attack __instance, Humanoid character)
             {
-                if (__instance.m_character != Player.m_localPlayer || !Player.m_localPlayer.HasActiveMagicEffect("Retaliation", out float _, 1f)) return;
+                if (character != Player.m_localPlayer || !Player.m_localPlayer.HasActiveMagicEffect("Retaliation", out float _, 1f)) return;
                 AttackType = __instance.m_attackAnimation;
                 //var se = Player.m_localPlayer.GetSEMan().GetStatusEffect(SE_Retaliation.EffectName.GetStableHashCode()) as SE_Retaliation;
                 //if (!__instance.m_character.InAttack() && se.m_time >= .3f) se.ConsumeStack();
