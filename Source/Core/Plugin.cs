@@ -73,7 +73,7 @@ namespace PraetorisClient
         internal static ConfigEntry<float> CreatureOwnerWardUpdateIntervalSeconds = null!;
         internal static ConfigEntry<bool> DebugCreatureOwnerWard = null!;
         internal static ConfigEntry<bool> DebugServerChest = null!;
-        internal static ConfigEntry<bool> BlockAzuAutoStoreClientConfigSync = null!;
+        internal static ConfigEntry<bool> BlockPeerServerSyncConfigSync = null!;
 
         internal static string GetLinkApiUrl()
         {
@@ -196,7 +196,7 @@ namespace PraetorisClient
             MeasurementDisableNetworkMetrics = Config.Bind("Measurement", "DisableNetworkMetrics", false, "Local measurement override. When true, disables PraetorisClient RPC probe and socket metric capture even if synced config enables it.");
             MeasurementDisableNetworkMetricHttpUpload = Config.Bind("Measurement", "DisableNetworkMetricHttpUpload", false, "Local measurement override. When true, keeps network metrics on disk and does not upload them over HTTP.");
             DisableBoatWaterImpactDamage = Config.Bind("Ships", "DisableBoatWaterImpactDamage", true, SyncedDescription("Prevents boats from losing health when Valheim's water-force impact handling applies boat impact damage. Other boat damage sources still apply normally."));
-            BlockAzuAutoStoreClientConfigSync = Config.Bind("ServerSyncProtection", "BlockAzuAutoStoreClientConfigSync", true, SyncedDescription("Blocks client-origin AzuAutoStore ServerSync config packets so Praetoris clients do not publish or accept peer config changes."));
+            BlockPeerServerSyncConfigSync = Config.Bind("ServerSyncProtection", "BlockPeerServerSyncConfigSync", true, SyncedDescription("Blocks peer-origin ServerSync config packets so Praetoris clients do not publish or accept client-to-client config changes."));
             CreatureOwnerWardRadius = Config.Bind("CreatureOwnerWard", "Radius", 40f, SyncedDescription("Meters around an active Creature Owner Ward where monster ZDO ownership is assigned to the configured connected player."));
             CreatureOwnerWardUpdateIntervalSeconds = Config.Bind("CreatureOwnerWard", "UpdateIntervalSeconds", 2f, SyncedDescription("Seconds between active Creature Owner Ward reassignment checks."));
             DebugCreatureOwnerWard = Config.Bind("CreatureOwnerWard", "Debug", false, SyncedDescription("When true, logs Creature Owner Ward owner resolution and creature ownership changes."));

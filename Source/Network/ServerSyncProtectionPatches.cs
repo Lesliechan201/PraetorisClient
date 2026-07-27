@@ -1,36 +1,90 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 
 namespace PraetorisClient
 {
     internal static class ServerSyncProtection
     {
-        private const string AzuAutoStoreConfigSyncMethod = "Azumatt.AzuAutoStore ConfigSync";
-        private static readonly int AzuAutoStoreConfigSyncMethodHash = AzuAutoStoreConfigSyncMethod.GetStableHashCode();
+        private const string ServerSyncConfigSyncMethodSuffix = " ConfigSync";
+        private static readonly HashSet<int> ServerSyncConfigSyncMethodHashes = new();
 
         internal static bool ShouldBlockOutgoing(string methodName)
         {
-            return IsEnabledOnClient && string.Equals(methodName, AzuAutoStoreConfigSyncMethod, StringComparison.Ordinal);
-        }
-
-        internal static bool ShouldBlockIncoming(long senderPeerId, int methodHash)
-        {
-            if (methodHash != AzuAutoStoreConfigSyncMethodHash)
+            if (!IsEnabledOnClient || !IsServerSyncConfigSyncMethod(methodName))
             {
                 return false;
             }
 
-            return ZRoutedRpc.instance != null && senderPeerId != ZRoutedRpc.instance.GetServerPeerID();
+            PraetorisClientPlugin.Log.LogInfo("Blocked outgoing peer ServerSync config packet: " + methodName);
+            return true;
+        }
+
+        internal static bool ShouldBlockIncoming(long senderPeerId, int methodHash)
+        {
+            if (!ServerSyncConfigSyncMethodHashes.Contains(methodHash))
+            {
+                return false;
+            }
+
+            if (ZRoutedRpc.instance == null || senderPeerId == ZRoutedRpc.instance.GetServerPeerID())
+            {
+                return false;
+            }
+
+            PraetorisClientPlugin.Log.LogInfo("Blocked incoming peer ServerSync config packet from " + senderPeerId);
+            return true;
+        }
+
+        internal static void TrackRegisteredMethod(string methodName)
+        {
+            if (IsServerSyncConfigSyncMethod(methodName))
+            {
+                ServerSyncConfigSyncMethodHashes.Add(methodName.GetStableHashCode());
+            }
         }
 
         internal static bool IsEnabledOnClient
         {
             get
             {
-                return PraetorisClientPlugin.BlockAzuAutoStoreClientConfigSync?.Value == true
+                return PraetorisClientPlugin.BlockPeerServerSyncConfigSync?.Value == true
                        && ZNet.instance != null
                        && !ZNet.instance.IsServer();
             }
+        }
+
+        private static bool IsServerSyncConfigSyncMethod(string methodName)
+        {
+            return !string.IsNullOrEmpty(methodName)
+                   && methodName.EndsWith(ServerSyncConfigSyncMethodSuffix, StringComparison.Ordinal);
+        }
+    }
+
+    [HarmonyPatch]
+    internal static class ServerSyncProtectionRegisterPatch
+    {
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            foreach (MethodInfo method in AccessTools.GetDeclaredMethods(typeof(ZRoutedRpc)))
+            {
+                if (method.Name != nameof(ZRoutedRpc.Register))
+                {
+                    continue;
+                }
+
+                ParameterInfo[] parameters = method.GetParameters();
+                if (parameters.Length >= 2 && parameters[0].ParameterType == typeof(string))
+                {
+                    yield return method;
+                }
+            }
+        }
+
+        private static void Prefix(string name)
+        {
+            ServerSyncProtection.TrackRegisteredMethod(name);
         }
     }
 
