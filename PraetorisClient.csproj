@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="Environment.props" />
-  <Import Project="ILRepack.targets" />
 
   <PropertyGroup>
     <TargetFramework>net481</TargetFramework>
@@ -48,6 +47,10 @@
 	</Reference>
 	<Reference Include="EpicLoot-UnityLib">
 		<HintPath>EpicLoot\Libs\EpicLoot-UnityLib.dll</HintPath>
+		<Private>false</Private>
+	</Reference>
+	<Reference Include="ValheimRcon">
+		<HintPath>Libs\ValheimRcon.dll</HintPath>
 		<Private>false</Private>
 	</Reference>
   </ItemGroup>
