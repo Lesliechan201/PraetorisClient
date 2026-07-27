@@ -82,12 +82,12 @@ namespace EpicLootLeslieAlphaTest.src.StatusEffects
             //Jotunn.Logger.LogInfo($"animator speed: {m_character.m_animator.speed} character attack{ m_character.m_attack} string attack type{Retaliation.AttackType}");
             if (m_character.m_animator != null && m_character.m_animator.speed >= 5f && addedRetaliationSpeed == false) //&& m_stacks > 0)
             {
-                var s1 = m_character.m_animator.speed += (Retaliation.AttackType != null && _animSpeeds.TryGetValue(Retaliation.AttackType, out float s)) ? s : 1.2f;
+                m_character.m_animator.speed += (Retaliation.AttackType != null && _animSpeeds.TryGetValue(Retaliation.AttackType, out float s)) ? s : 1.2f;
                 addedRetaliationSpeed = true;
             }
             if (m_character.m_animator != null && m_character.m_animator.speed < 5f)
             {
-                var s2 = m_character.m_animator.speed = (Retaliation.AttackType != null && _animSpeeds.TryGetValue(Retaliation.AttackType, out float s)) ? s : 1.2f;
+                m_character.m_animator.speed = (Retaliation.AttackType != null && _animSpeeds.TryGetValue(Retaliation.AttackType, out float s)) ? s : 1.2f;
             }
             if (m_stacks > 0 && !m_character.InAttack())
             {
