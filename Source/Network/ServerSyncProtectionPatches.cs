@@ -13,9 +13,9 @@ namespace PraetorisClient
             return IsEnabledOnClient && string.Equals(methodName, AzuAutoStoreConfigSyncMethod, StringComparison.Ordinal);
         }
 
-        internal static bool ShouldBlockIncoming(long senderPeerId, long targetPeerId, int methodHash)
+        internal static bool ShouldBlockIncoming(long senderPeerId, int methodHash)
         {
-            if (!IsEnabledOnClient || methodHash != AzuAutoStoreConfigSyncMethodHash || targetPeerId != ZRoutedRpc.Everybody)
+            if (methodHash != AzuAutoStoreConfigSyncMethodHash)
             {
                 return false;
             }
@@ -59,11 +59,11 @@ namespace PraetorisClient
                 pkg.SetPos(0);
                 pkg.ReadLong();
                 long senderPeerId = pkg.ReadLong();
-                long targetPeerId = pkg.ReadLong();
+                pkg.ReadLong();
                 pkg.ReadZDOID();
                 int methodHash = pkg.ReadInt();
 
-                return !ServerSyncProtection.ShouldBlockIncoming(senderPeerId, targetPeerId, methodHash);
+                return !ServerSyncProtection.ShouldBlockIncoming(senderPeerId, methodHash);
             }
             catch (Exception ex)
             {
