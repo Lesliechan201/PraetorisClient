@@ -10,8 +10,6 @@ namespace PraetorisClient.CreatureOwnership
     {
         internal const string PrefabName = "PraetorisCreatureOwnerWard";
         private const string BasePrefabName = "guard_stone";
-        private const string OriginalRequirementItemName = "SurtlingCore";
-        private const string ReplacementRequirementItemName = "MoltenCore";
         private static bool _registered;
 
         internal static void Initialize()
@@ -38,7 +36,11 @@ namespace PraetorisClient.CreatureOwnership
                 Name = "Creature Owner Ward",
                 Description = "Reassigns nearby monster ownership while active.",
                 PieceTable = PieceTables.Hammer,
-                Category = PieceCategories.Misc
+                Category = PieceCategories.Misc,
+                Requirements = new[]
+                {
+                    new RequirementConfig("RoundLog", 10)
+                }
             };
 
             CustomPiece customPiece = new CustomPiece(PrefabName, BasePrefabName, pieceConfig);
@@ -50,7 +52,6 @@ namespace PraetorisClient.CreatureOwnership
             }
 
             AttachOwnerWardComponent(prefab);
-            ReplaceSurtlingCoreRequirement(prefab);
             AddSurtlingTrophyKitbash(prefab);
             RemoveInheritedPlacementColliders(prefab);
             PieceManager.Instance.AddPiece(customPiece);
@@ -89,41 +90,6 @@ namespace PraetorisClient.CreatureOwnership
             if (ownerWard.m_enabledEffect != null)
             {
                 ownerWard.m_enabledEffect.SetActive(false);
-            }
-        }
-
-        private static void ReplaceSurtlingCoreRequirement(GameObject prefab)
-        {
-            Piece piece = prefab.GetComponent<Piece>();
-            if (piece == null)
-            {
-                PraetorisClientPlugin.Log.LogWarning("Creature Owner Ward prefab has no Piece component; recipe requirement was not changed.");
-                return;
-            }
-
-            if (piece.m_resources == null || piece.m_resources.Length == 0)
-            {
-                PraetorisClientPlugin.Log.LogWarning("Creature Owner Ward prefab has no recipe requirements; recipe requirement was not changed.");
-                return;
-            }
-
-            bool replaced = false;
-            foreach (Piece.Requirement requirement in piece.m_resources)
-            {
-                ItemDrop item = requirement.m_resItem;
-                if (item == null || item.name != OriginalRequirementItemName)
-                {
-                    continue;
-                }
-
-                requirement.m_resItem = Mock<ItemDrop>.Create(ReplacementRequirementItemName);
-                replaced = true;
-            }
-
-            if (!replaced)
-            {
-                PraetorisClientPlugin.Log.LogWarning(
-                    "Creature Owner Ward recipe did not contain " + OriginalRequirementItemName + "; " + ReplacementRequirementItemName + " replacement was not applied.");
             }
         }
 

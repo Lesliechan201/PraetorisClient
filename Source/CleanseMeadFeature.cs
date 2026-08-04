@@ -92,7 +92,9 @@ namespace PraetorisClient
                 Amount = 1,
                 Requirements = new[]
                 {
-                    new RequirementConfig("Pukeberries", 6)
+                    new RequirementConfig("Pukeberries", 6),
+                    new RequirementConfig("FreshSeaweed", 1),
+                    new RequirementConfig("FragrantBundle", 1)
                 }
             };
         }
