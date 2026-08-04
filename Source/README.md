@@ -1,0 +1,13 @@
+# Source Layout
+
+- `BotLink/` - Discord/bot account linking and bot HTTP API calls.
+- `Core/` - plugin entrypoint, shared models, and player lookup helpers.
+- `Creative/` - creative-mode biome, inventory, command-zone, and vegetation behavior.
+- `Network/` - shared RPC names, RPC wiring, and send-state helpers.
+- `Patches/` - general Valheim patches that do not yet belong to a narrower feature area.
+- `Siege/` - siege portal bridge and related test command.
+- `Telemetry/Common/` - shared telemetry serialization, math, and runtime metadata.
+- `Telemetry/FrameMetrics/` - local frame-time measurement.
+- `Telemetry/RpcTrace/` - local storage, RPC probes, and socket metrics.
+
+Keep new feature code in the narrowest folder that describes the behavior. Add a new top-level feature folder when a feature has multiple files or is expected to grow.

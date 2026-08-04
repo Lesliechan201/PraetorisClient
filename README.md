@@ -9,8 +9,13 @@ A BepInEx client companion mod for Praetoris gameplay and account-linking featur
   !link CODE
   ```
 - Creative inventory bridge RPC for server-side mods that need a trusted client inventory count.
-- Creative biome override RPC for server-side creative zones that need client-side biome terrain paint.
+- Creative biome, terrain, vegetation, drop suppression, and skill suppression bridges for server-side creative zones.
 - Siege portal client bridge RPC for server-side siege portal handling.
+- ServerChest player registration, admin delivery commands, and ValheimRcon command registration for offline item delivery workflows.
+- Client-side RPC trace capture with deferred HTTP upload to the ValheimTracer relay using durable server-issued tokens.
+- Client-side ZDO data trace capture for all ZDOData send, receive, apply, and skip events by default.
+- Client socket metric samples and active RPC probe samples for lower-volume ValheimTracer latency and socket pressure dashboards.
+- Local-only low-value environment damage text suppression while preserving combat damage numbers.
 
 The moved RPC names intentionally keep their existing `DiscordTools_*` wire names so current server-side integrations can keep using the same requests.
 
@@ -40,6 +45,10 @@ export PRAETORISCLIENT_BOT_API_KEY="shared-secret"
 ```
 
 Keep real endpoint and API key values in a local `.env` file or server environment. `.env` files are ignored by git; `.env.example` documents the required variable names without secrets.
+
+## Documentation
+
+- [Server Chest command guide](docs/server-chest.md)
 
 ## Creative Inventory RPC
 
@@ -137,3 +146,17 @@ When a player enters `!link CODE`, the dedicated server posts JSON to `LinkApiUr
 ```
 
 The endpoint should return `2xx` when the code is accepted. A plain-text response body is shown to the player in chat.
+
+## RPC Trace Upload
+
+PraetorisClient can capture routed RPC and ZDO trace rows locally and upload compressed JSONL batches to the ValheimTracer HTTP relay. The server issues durable upload tokens over small Valheim RPC messages. Bulk trace data is not sent through Valheim routed RPC. HTTP upload is deferred while the client is actively in-world, then runs from menu/background when possible. If HTTP upload fails, the client logs the failure and keeps the local trace file for a later retry.
+
+Pending trace files are stored locally as `.jsonl.gz` files to reduce disk usage and backlog upload pressure. Existing legacy `.jsonl` pending files are still read and uploaded.
+
+Trace rows and upload token requests include Steam ID, platform user ID, trace player ID, and player name when available so server-side storage can group traces by player.
+
+Server-synced config controls whether tracing is enabled and whether HTTP upload is preferred.
+
+## Network Tweaks
+
+`Network.SuppressEnvironmentDamageText` is enabled by default. When enabled, the client suppresses low-value environment damage text such as AoE hits against build pieces and non-player vegetation damage while preserving character combat damage numbers.
