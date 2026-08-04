@@ -109,7 +109,7 @@ namespace PraetorisClient
                 ServerChestRconCommand.Register();
             }
 
-            CleanseMeadFeature.Register();
+            CleanseMeadFeature.Initialize();
             SiegePortalTestCommand.Register();
             FrameTimeMonitor.Initialize();
             RpcTraceTelemetry.Initialize();
@@ -127,6 +127,7 @@ namespace PraetorisClient
         private void OnDestroy()
         {
             SynchronizationManager.OnConfigurationSynchronized -= OnConfigurationSynchronized;
+            CleanseMeadFeature.Shutdown();
             CreatureOwnerWardPiece.Shutdown();
             ServerChestPiece.Shutdown();
 

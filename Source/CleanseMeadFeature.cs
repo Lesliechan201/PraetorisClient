@@ -18,10 +18,22 @@ namespace PraetorisClient
 
         private static bool _registered;
 
-        public static void Register()
+        internal static void Initialize()
+        {
+            PrefabManager.OnVanillaPrefabsAvailable += Register;
+        }
+
+        internal static void Shutdown()
+        {
+            PrefabManager.OnVanillaPrefabsAvailable -= Register;
+            _registered = false;
+        }
+
+        private static void Register()
         {
             if (_registered)
             {
+                PrefabManager.OnVanillaPrefabsAvailable -= Register;
                 return;
             }
 
@@ -48,6 +60,7 @@ namespace PraetorisClient
             if (ItemManager.Instance.AddItem(customItem))
             {
                 _registered = true;
+                PrefabManager.OnVanillaPrefabsAvailable -= Register;
                 PraetorisClientPlugin.Log.LogInfo("Registered cleanse mead.");
             }
         }
