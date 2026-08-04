@@ -12,7 +12,7 @@ namespace PraetorisClient
         private const string BasePrefabName = "MeadPoisonResist";
         private const string ItemName = "Cleanse Mead";
         private const string ItemDescription = "Removes active status effects and prevents another cleanse for 3 minutes.";
-        private const float IconTintStrength = 0.35f;
+        private const float IconTintStrength = 0.55f;
 
         private static readonly Color IconTint = new Color(0.45f, 0.95f, 1f, 1f);
 
@@ -112,7 +112,7 @@ namespace PraetorisClient
         private static Sprite TryCreateTintedIcon(Sprite sourceIcon)
         {
             Texture2D sourceTexture = sourceIcon.texture;
-            Rect sourceRect = sourceIcon.rect;
+            Rect sourceRect = sourceIcon.textureRect;
             int width = Mathf.RoundToInt(sourceRect.width);
             int height = Mathf.RoundToInt(sourceRect.height);
 
@@ -124,11 +124,10 @@ namespace PraetorisClient
 
             try
             {
-                Color[] pixels = sourceTexture.GetPixels(
-                    Mathf.RoundToInt(sourceRect.x),
-                    Mathf.RoundToInt(sourceRect.y),
-                    width,
-                    height);
+                if (!TryReadSpritePixels(sourceTexture, sourceRect, width, height, out Color[] pixels))
+                {
+                    return null!;
+                }
 
                 for (int i = 0; i < pixels.Length; i++)
                 {
@@ -146,12 +145,53 @@ namespace PraetorisClient
                 Vector2 pivot = new Vector2(sourceIcon.pivot.x / sourceRect.width, sourceIcon.pivot.y / sourceRect.height);
                 Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, width, height), pivot, sourceIcon.pixelsPerUnit);
                 sprite.name = sourceIcon.name + "_Cleanse";
+                PraetorisClientPlugin.Log.LogInfo("Created tinted cleanse mead icon from " + sourceIcon.name + ".");
                 return sprite;
             }
             catch (Exception ex)
             {
                 PraetorisClientPlugin.Log.LogWarning("Cleanse mead could not tint the poison mead icon. Using the cloned icon unchanged. " + ex.Message);
                 return null!;
+            }
+        }
+
+        private static bool TryReadSpritePixels(Texture2D sourceTexture, Rect sourceRect, int width, int height, out Color[] pixels)
+        {
+            int x = Mathf.RoundToInt(sourceRect.x);
+            int y = Mathf.RoundToInt(sourceRect.y);
+            pixels = null!;
+
+            try
+            {
+                pixels = sourceTexture.GetPixels(x, y, width, height);
+                return true;
+            }
+            catch (Exception cpuReadException)
+            {
+                RenderTexture previous = RenderTexture.active;
+                RenderTexture renderTexture = RenderTexture.GetTemporary(sourceTexture.width, sourceTexture.height, 0, RenderTextureFormat.ARGB32);
+                Texture2D readableTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+
+                try
+                {
+                    Graphics.Blit(sourceTexture, renderTexture);
+                    RenderTexture.active = renderTexture;
+                    readableTexture.ReadPixels(new Rect(x, y, width, height), 0, 0);
+                    readableTexture.Apply();
+                    pixels = readableTexture.GetPixels();
+                    return true;
+                }
+                catch (Exception gpuReadException)
+                {
+                    PraetorisClientPlugin.Log.LogWarning("Cleanse mead could not read the poison mead icon for tinting. CPU read failed: " + cpuReadException.Message + " GPU read failed: " + gpuReadException.Message);
+                    return false;
+                }
+                finally
+                {
+                    RenderTexture.active = previous;
+                    RenderTexture.ReleaseTemporary(renderTexture);
+                    UnityEngine.Object.Destroy(readableTexture);
+                }
             }
         }
     }
