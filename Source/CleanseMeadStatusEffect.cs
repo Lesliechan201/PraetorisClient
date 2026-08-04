@@ -7,7 +7,7 @@ namespace PraetorisClient
     {
         private const string InternalName = "SE_Warp_MeadCleanse";
         private const string Category = "PraetorisCleanseMead";
-        private const float DurationSeconds = 180f;
+        private const float DurationSeconds = 120f;
 
         public static CleanseMeadStatusEffect Create(Sprite icon)
         {
@@ -18,7 +18,7 @@ namespace PraetorisClient
             effect.m_icon = icon;
             effect.m_cooldownIcon = true;
             effect.m_ttl = DurationSeconds;
-            effect.m_tooltip = "Recent cleanse. You cannot drink another cleanse mead until this expires.";
+            effect.m_tooltip = "Cleanses ALL status effects. Be mindful of your burdens!";
             effect.m_startMessageType = MessageHud.MessageType.Center;
             effect.m_startMessage = "You feel cleansed.";
             return effect;
