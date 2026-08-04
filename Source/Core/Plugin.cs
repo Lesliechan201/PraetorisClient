@@ -26,7 +26,7 @@ namespace PraetorisClient
     public class PraetorisClientPlugin : BaseUnityPlugin
     {
         private const string ModName = "PraetorisClient";
-        private const string ModVersion = "0.1.55";
+        private const string ModVersion = "0.1.56";
         private const string Author = "warpalicious";
         private const string ModGUID = Author + "." + ModName;
         private const string LinkApiUrlEnv = "PRAETORISCLIENT_LINK_API_URL";
@@ -35,9 +35,9 @@ namespace PraetorisClient
         internal static string TraceModGuid => ModGUID;
         internal static string TraceModName => ModName;
         internal static string TraceModVersion => ModVersion;
-        
+
         //Hello World
-        
+
         private readonly Harmony _harmony = new(ModGUID);
         private DateTime _lastReloadTime;
         private FileSystemWatcher? _configWatcher;
@@ -109,6 +109,7 @@ namespace PraetorisClient
                 ServerChestRconCommand.Register();
             }
 
+            CleanseMeadFeature.Initialize();
             SiegePortalTestCommand.Register();
             FrameTimeMonitor.Initialize();
             RpcTraceTelemetry.Initialize();
@@ -126,6 +127,7 @@ namespace PraetorisClient
         private void OnDestroy()
         {
             SynchronizationManager.OnConfigurationSynchronized -= OnConfigurationSynchronized;
+            CleanseMeadFeature.Shutdown();
             CreatureOwnerWardPiece.Shutdown();
             ServerChestPiece.Shutdown();
 
