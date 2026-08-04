@@ -54,6 +54,7 @@ namespace PraetorisClient
             Instance = this;
             BindConfig();
             SynchronizationManager.OnConfigurationSynchronized += OnConfigurationSynchronized;
+            CleanseMeadFeature.Register();
             SiegePortalTestCommand.Register();
             _harmony.PatchAll(Assembly.GetExecutingAssembly());
             SetupWatcher();
