@@ -63,6 +63,7 @@ namespace PraetorisClient
             }
 
             ConfigureItem(customItem.ItemPrefab, statusEffect, icon);
+            ConfigureMeadBase(meadBase.ItemPrefab, statusEffect);
 
             if (!ItemManager.Instance.AddItem(customItem))
             {
@@ -116,6 +117,13 @@ namespace PraetorisClient
             shared.m_name = ItemName;
             shared.m_description = ItemDescription;
             shared.m_icons = new[] { icon };
+            shared.m_consumeStatusEffect = statusEffect;
+        }
+
+        private static void ConfigureMeadBase(GameObject itemPrefab, StatusEffect statusEffect)
+        {
+            ItemDrop itemDrop = itemPrefab.GetComponent<ItemDrop>();
+            ItemDrop.ItemData.SharedData shared = itemDrop.m_itemData.m_shared;
             shared.m_consumeStatusEffect = statusEffect;
         }
 
