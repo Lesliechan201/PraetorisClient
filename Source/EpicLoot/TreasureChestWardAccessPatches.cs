@@ -6,6 +6,8 @@ namespace PraetorisClient.EpicLootFeature
 {
     internal static class TreasureChestWardAccess
     {
+        private const string TreasureMapChestBiomeKey = "TreasureMapChest.Biome";
+
         internal static void DisableGuardStoneCheckForTreasureChest(Container container)
         {
             if (container == null || !container.m_checkGuardStone || !IsEpicLootTreasureChest(container))
@@ -18,34 +20,36 @@ namespace PraetorisClient.EpicLootFeature
 
         private static bool IsEpicLootTreasureChest(Component component)
         {
-            return component.GetComponentInParent<TreasureMapChest>() != null;
+            if (component.GetComponentInParent<TreasureMapChest>() != null)
+            {
+                return true;
+            }
+
+            ZNetView zNetView = component.GetComponent<ZNetView>();
+            if (zNetView == null || !zNetView.IsValid())
+            {
+                return false;
+            }
+
+            return !string.IsNullOrEmpty(zNetView.GetZDO().GetString(TreasureMapChestBiomeKey));
         }
     }
 
-    [HarmonyPatch(typeof(Container), nameof(Container.Interact))]
-    internal static class EpicLootTreasureChestContainerInteractPatch
+    [HarmonyPatch(typeof(Container), "Awake")]
+    internal static class EpicLootTreasureChestContainerAwakePatch
     {
-        private static void Prefix(Container __instance)
+        private static void Postfix(Container __instance)
         {
             TreasureChestWardAccess.DisableGuardStoneCheckForTreasureChest(__instance);
         }
     }
 
-    [HarmonyPatch(typeof(Container), nameof(Container.TakeAll))]
-    internal static class EpicLootTreasureChestContainerTakeAllPatch
+    [HarmonyPatch(typeof(TreasureMapChest), nameof(TreasureMapChest.Reinitialize))]
+    internal static class EpicLootTreasureChestReinitializePatch
     {
-        private static void Prefix(Container __instance)
+        private static void Postfix(TreasureMapChest __instance)
         {
-            TreasureChestWardAccess.DisableGuardStoneCheckForTreasureChest(__instance);
-        }
-    }
-
-    [HarmonyPatch(typeof(Container), nameof(Container.GetHoverText))]
-    internal static class EpicLootTreasureChestContainerHoverTextPatch
-    {
-        private static void Prefix(Container __instance)
-        {
-            TreasureChestWardAccess.DisableGuardStoneCheckForTreasureChest(__instance);
+            TreasureChestWardAccess.DisableGuardStoneCheckForTreasureChest(__instance.GetComponent<Container>());
         }
     }
 }
