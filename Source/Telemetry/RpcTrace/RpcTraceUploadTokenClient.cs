@@ -10,8 +10,8 @@ namespace PraetorisClient
 {
     internal static class RpcTraceUploadTokenClient
     {
-        private const int TokenCacheVersion = 1;
-        private const string TokenCacheFileName = "http_upload_token.cache";
+        private const int TokenCacheVersion = 2;
+        private const string TokenCacheFileName = "http_network_metric_upload_token.cache";
         private const float RequestRetrySeconds = 30f;
         private const float ConfigurationRetrySeconds = 300f;
         private static string _sessionId = "";
@@ -25,15 +25,6 @@ namespace PraetorisClient
         internal static string Token { get; private set; } = "";
         internal static int MaxBatchBytes { get; private set; } = 128 * 1024;
         internal static float FlushIntervalSeconds { get; private set; } = 10f;
-
-        internal static string SessionId
-        {
-            get
-            {
-                EnsureSessionId();
-                return _sessionId;
-            }
-        }
 
         internal static void Initialize()
         {
@@ -49,9 +40,9 @@ namespace PraetorisClient
 
         internal static void Update()
         {
-            if (PraetorisClientPlugin.MeasurementDisableHttpTraceUpload.Value ||
-                !PraetorisClientPlugin.RpcTraceHttpUploadPreferred.Value ||
-                !RpcTraceTelemetry.IsTracingEnabled())
+            if (PraetorisClientPlugin.MeasurementDisableNetworkMetricHttpUpload.Value
+                || !PraetorisClientPlugin.NetworkMetricHttpUploadPreferred.Value
+                || !RpcTraceTelemetry.IsTracingEnabled())
             {
                 ClearToken(deleteCachedToken: false);
                 return;
@@ -64,6 +55,7 @@ namespace PraetorisClient
                 LogRequestGateIfDue();
                 return;
             }
+
             if (HasUsableToken())
                 return;
             if (Time.realtimeSinceStartup < _nextRequestTime)
@@ -88,9 +80,9 @@ namespace PraetorisClient
             _requestPending = false;
             _nextRequestTime = Time.realtimeSinceStartup + ConfigurationRetrySeconds;
             PraetorisClientPlugin.Log.LogWarning(
-                "HTTP RPC trace upload rejected by receiver configuration: "
+                "HTTP network metric upload rejected by receiver configuration: "
                 + (string.IsNullOrWhiteSpace(responseText) ? "HTTP " + responseCode : responseText)
-                + ". Keeping local trace files and pausing token requests.");
+                + ". Keeping local metric files and pausing token requests.");
             return false;
         }
 
@@ -118,7 +110,7 @@ namespace PraetorisClient
                 {
                     ClearToken(deleteCachedToken: true);
                     if (!string.IsNullOrWhiteSpace(message))
-                        PraetorisClientPlugin.Log.LogInfo("HTTP RPC trace upload unavailable: " + message);
+                        PraetorisClientPlugin.Log.LogInfo("HTTP network metric upload unavailable: " + message);
                     return;
                 }
 
@@ -131,15 +123,12 @@ namespace PraetorisClient
                 MaxBatchBytes = Math.Max(4096, maxBatchBytes);
                 FlushIntervalSeconds = Math.Max(1f, flushIntervalSeconds);
                 SaveCachedToken();
-                PraetorisClientPlugin.Log.LogInfo(
-                    "Received HTTP RPC trace upload token for session "
-                    + _sessionId
-                    + ".");
+                PraetorisClientPlugin.Log.LogInfo("Received HTTP network metric upload token for session " + _sessionId + ".");
             }
             catch (Exception ex)
             {
                 _requestPending = false;
-                PraetorisClientPlugin.Log.LogWarning($"Failed to process RPC trace upload token response from peer {sender}: {ex.Message}");
+                PraetorisClientPlugin.Log.LogWarning($"Failed to process network metric upload token response from peer {sender}: {ex.Message}");
             }
         }
 
@@ -159,7 +148,7 @@ namespace PraetorisClient
                 package.Write(identity.SteamId);
                 package.Write(identity.PlatformUserId);
                 package.Write(identity.PlayerName);
-                PraetorisClientPlugin.Log.LogInfo("Requesting HTTP RPC trace upload token for session " + _sessionId + ".");
+                PraetorisClientPlugin.Log.LogInfo("Requesting HTTP network metric upload token for session " + _sessionId + ".");
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), RpcNames.RpcTraceUploadTokenRequest, package);
                 _requestPending = true;
                 _nextRequestTime = Time.realtimeSinceStartup + RequestRetrySeconds;
@@ -170,7 +159,7 @@ namespace PraetorisClient
             {
                 _requestPending = false;
                 _nextRequestTime = Time.realtimeSinceStartup + RequestRetrySeconds;
-                PraetorisClientPlugin.Log.LogWarning("Failed to request RPC trace upload token: " + ex.Message);
+                PraetorisClientPlugin.Log.LogWarning("Failed to request network metric upload token: " + ex.Message);
             }
         }
 
@@ -193,7 +182,7 @@ namespace PraetorisClient
             string routedRpc = ZRoutedRpc.instance == null ? "no-routed-rpc" : "routed-rpc-ready";
             string server = ZNet.instance == null ? "unknown-server-state" : (ZNet.instance.IsServer() ? "server" : "client");
             PraetorisClientPlugin.Log.LogDebug(
-                "RPC trace upload token request deferred: pending="
+                "Network metric upload token request deferred: pending="
                 + _requestPending
                 + ", status="
                 + status
@@ -249,15 +238,12 @@ namespace PraetorisClient
                 Token = token;
                 MaxBatchBytes = Math.Max(4096, maxBatchBytes);
                 FlushIntervalSeconds = Math.Max(1f, flushIntervalSeconds);
-                PraetorisClientPlugin.Log.LogInfo(
-                    "Loaded cached HTTP RPC trace upload token for session "
-                    + _sessionId
-                    + ".");
+                PraetorisClientPlugin.Log.LogInfo("Loaded cached HTTP network metric upload token for session " + _sessionId + ".");
             }
             catch (Exception ex)
             {
                 DeleteCachedToken();
-                PraetorisClientPlugin.Log.LogWarning("Failed to load cached HTTP RPC trace upload token: " + ex.Message);
+                PraetorisClientPlugin.Log.LogWarning("Failed to load cached HTTP network metric upload token: " + ex.Message);
             }
         }
 
@@ -287,7 +273,7 @@ namespace PraetorisClient
             }
             catch (Exception ex)
             {
-                PraetorisClientPlugin.Log.LogWarning("Failed to cache HTTP RPC trace upload token: " + ex.Message);
+                PraetorisClientPlugin.Log.LogWarning("Failed to cache HTTP network metric upload token: " + ex.Message);
             }
         }
 
@@ -301,7 +287,7 @@ namespace PraetorisClient
             }
             catch (Exception ex)
             {
-                PraetorisClientPlugin.Log.LogWarning("Failed to delete cached HTTP RPC trace upload token: " + ex.Message);
+                PraetorisClientPlugin.Log.LogWarning("Failed to delete cached HTTP network metric upload token: " + ex.Message);
             }
         }
 
@@ -351,7 +337,7 @@ namespace PraetorisClient
 
         private static string GetTokenCachePath()
         {
-            return Path.Combine(Paths.BepInExRootPath, "logs", "PraetorisClient", "RpcTrace", TokenCacheFileName);
+            return Path.Combine(Paths.BepInExRootPath, "logs", "PraetorisClient", "NetworkMetrics", TokenCacheFileName);
         }
 
         private static void EnsureSessionId()
