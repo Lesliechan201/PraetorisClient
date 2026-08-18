@@ -40,8 +40,6 @@ namespace PraetorisClient
         private FileSystemWatcher? _configWatcher;
         private const long ReloadDelayTicks = 10000000;
 
-        private static bool Loaded = false;
-
         public static PraetorisClientPlugin? Instance { get; private set; }
         public static readonly ManualLogSource Log = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
@@ -94,7 +92,7 @@ namespace PraetorisClient
         public void Awake()
         {
             // Leslie EpicLoot additions
-            PrefabManager.OnPrefabsRegistered += () => { if (Loaded) return; HumanoidFactory.Create(); Loaded = true; };
+            PrefabManager.OnPrefabsRegistered += () => { if (HumanoidFactory.playerAncestor != null) return; HumanoidFactory.Create(); };
             PrefabManager.OnPrefabsRegistered += () => InfusionVFX.Init();
             MagicEffects.Init();
             SERegistry.RegisterStatusEffects();
