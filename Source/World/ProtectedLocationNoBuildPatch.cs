@@ -20,8 +20,6 @@ namespace PraetorisClient
             "Mistlands_DvergrTownEntrance2"
         };
 
-        private static readonly HashSet<string> LoggedPrefabs = new(StringComparer.Ordinal);
-
         internal static void ApplyToLoadedLocations()
         {
             foreach (Location location in Location.s_allLocations)
@@ -38,10 +36,6 @@ namespace PraetorisClient
                 }
 
                 location.m_noBuild = true;
-                if (LoggedPrefabs.Add(prefabName))
-                {
-                    PraetorisClientPlugin.Log.LogInfo($"Enabled no-build protection for location prefab {prefabName}.");
-                }
             }
         }
     }
