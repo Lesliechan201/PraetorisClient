@@ -114,6 +114,7 @@ namespace PraetorisClient
             FrameTimeMonitor.Initialize();
             RpcTraceTelemetry.Initialize();
             _harmony.PatchAll(Assembly.GetExecutingAssembly());
+            ProtectedLocationNoBuild.ApplyToLoadedLocations();
             SocketMetricPatches.ApplyManualPatches(_harmony);
             SetupWatcher();
         }
