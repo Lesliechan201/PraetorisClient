@@ -20,34 +20,36 @@ namespace PraetorisClient
             "Mistlands_DvergrTownEntrance2"
         };
 
+        internal static void ApplyToLocation(Location location)
+        {
+            if (location == null)
+            {
+                return;
+            }
+
+            string prefabName = Utils.GetPrefabName(location.gameObject);
+            if (ProtectedPrefabs.Contains(prefabName))
+            {
+                location.m_noBuild = true;
+            }
+        }
+
         internal static void ApplyToLoadedLocations()
         {
             foreach (Location location in Location.s_allLocations)
             {
-                if (location == null)
-                {
-                    continue;
-                }
-
-                string prefabName = Utils.GetPrefabName(location.gameObject);
-                if (!ProtectedPrefabs.Contains(prefabName))
-                {
-                    continue;
-                }
-
-                location.m_noBuild = true;
+                ApplyToLocation(location);
             }
         }
     }
 
-    [HarmonyPatch(typeof(Location), nameof(Location.IsInsideNoBuildLocation))]
-    internal static class ProtectedLocationNoBuildCheckPatch
+    [HarmonyPatch(typeof(Location), "Awake")]
+    internal static class ProtectedLocationNoBuildAwakePatch
     {
-        [HarmonyPrefix]
-        [HarmonyPriority(Priority.Last)]
-        private static void Prefix()
+        [HarmonyPostfix]
+        private static void Postfix(Location __instance)
         {
-            ProtectedLocationNoBuild.ApplyToLoadedLocations();
+            ProtectedLocationNoBuild.ApplyToLocation(__instance);
         }
     }
 }
