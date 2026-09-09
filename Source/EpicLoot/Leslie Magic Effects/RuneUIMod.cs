@@ -1,4 +1,5 @@
 ﻿using EpicLoot_UnityLib;
+using EpicLoot.CraftingV2;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,7 +84,8 @@ namespace EpicLootLeslieAlphaTest.src
             GameObject existingDialog = (GameObject)successDialogField.GetValue(__instance);
             if (existingDialog != null) UnityEngine.Object.Destroy(existingDialog);
             
-            GameObject result = RuneUI.RuneEnchancedItem(itemToEtch, rune, enchantIndex);
+            MethodInfo enhanceRune = AccessTools.Method(typeof(EnchantingUIController), "RuneEnhanceItemAndReturnSuccess");
+            GameObject result = (GameObject)enhanceRune.Invoke(null, new object[] { itemToEtch, rune, enchantIndex });
 
             if (result != null)
             {
