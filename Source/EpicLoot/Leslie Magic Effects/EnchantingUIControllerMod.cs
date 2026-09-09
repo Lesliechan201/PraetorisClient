@@ -17,11 +17,15 @@ namespace EpicLootLeslieAlphaTest.src
         {
             if (__result == null) return;
             MagicItem magicItem = __result.GetMagicItem();
-            if (magicItem == null || magicItem.Effects.Count != 1) return;
+            if (magicItem?.Effects == null || magicItem.Effects.Count != 1 || magicItem.Effects[0] == null) return;
+
+            MagicItem? sourceMagic = selectedItem?.GetMagicItem();
+            if (sourceMagic?.Effects == null || targetEnchant < 0 || targetEnchant >= sourceMagic.Effects.Count) return;
+            MagicItemEffect sourceEffect = sourceMagic.Effects[targetEnchant];
+            if (sourceEffect == null) return;
 
             // Preserve EpicLoot's modifier rules, but do not cap extraction at the
             // effect definition's maximum. Read the source value, not the capped rune.
-            MagicItemEffect sourceEffect = selectedItem.GetMagicItem().Effects[targetEnchant];
             float value = sourceEffect.EffectValue;
             if (!float.IsNaN(powerModifier) && powerModifier > 0f && powerModifier < 999f && value > 1f)
             {
