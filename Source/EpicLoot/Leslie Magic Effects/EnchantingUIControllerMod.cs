@@ -3,7 +3,6 @@ using EpicLoot.CraftingV2;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using UnityEngine;
 
 namespace EpicLootLeslieAlphaTest.src
@@ -12,44 +11,24 @@ namespace EpicLootLeslieAlphaTest.src
     internal class EnchantingUIControllerMod
 
     {
-        // remove rune extract limit block based on power modifier 
-        // still capped at 999
-        // rounds extracted values to 2 decimals
-        [HarmonyTranspiler]
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            var allDefinitionsField = AccessTools.Field(typeof(MagicItemEffectDefinitions), nameof(MagicItemEffectDefinitions.AllDefinitions));
-            var effectValueField = AccessTools.Field(typeof(MagicItemEffect), nameof(MagicItemEffect.EffectValue));
-
-            var codeMatcher = new CodeMatcher(instructions);
-
-            codeMatcher.MatchStartForward(
-                new CodeMatch(OpCodes.Ldsfld, allDefinitionsField));
-
-            int startPos = codeMatcher.Pos;
-
-            codeMatcher.MatchStartForward(
-                new CodeMatch(OpCodes.Stfld, effectValueField));
-
-            int endPos = codeMatcher.Pos;
-
-            codeMatcher.Start()
-                .Advance(startPos)
-                .RemoveInstructions(endPos - startPos + 1);
-
-            return codeMatcher.InstructionEnumeration();
-        }
-
         [HarmonyPostfix]
-        static void Postfix(ref ItemDrop.ItemData __result)
+        static void Postfix(ItemDrop.ItemData selectedItem, int targetEnchant, float powerModifier,
+            ItemDrop.ItemData __result)
         {
             if (__result == null) return;
-            var magicItem = __result.GetMagicItem();
-            if (magicItem == null) return;
-            foreach (var effect in magicItem.Effects)
+            MagicItem magicItem = __result.GetMagicItem();
+            if (magicItem == null || magicItem.Effects.Count != 1) return;
+
+            // Preserve EpicLoot's modifier rules, but do not cap extraction at the
+            // effect definition's maximum. Read the source value, not the capped rune.
+            MagicItemEffect sourceEffect = selectedItem.GetMagicItem().Effects[targetEnchant];
+            float value = sourceEffect.EffectValue;
+            if (!float.IsNaN(powerModifier) && powerModifier > 0f && powerModifier < 999f && value > 1f)
             {
-                effect.EffectValue = (float)Math.Round(effect.EffectValue, 2);
+                value *= powerModifier;
             }
+
+            magicItem.Effects[0].EffectValue = (float)Math.Round(value, 2);
             __result.SaveMagicItem(magicItem);
         }
     }
@@ -123,4 +102,3 @@ namespace EpicLootLeslieAlphaTest.src
         }
     }
 }
-
