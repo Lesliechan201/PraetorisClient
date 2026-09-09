@@ -86,16 +86,8 @@ PraetorisClient supplies the client-side parts required by the Praetoris creativ
 
 - Reports normal inventory and Shudnal ExtraSlots counts to the server.
 - Can include item name, stack, quality, equipped state, source inventory, and grid position.
-- Applies multiple server-defined biome override zones.
-- Can copy biome, terrain height, and terrain mask data from another world position.
-- Supports fixed terrain patch coverage, edge falloff, and an edge floor height.
-- Refreshes affected heightmaps, biome colors, and grass when a zone changes.
-- Makes Ashlands and Deep North checks follow the overridden biome.
-- Can block natural and event spawns inside a zone.
-- Can suppress drops from trees, logs, pickables, destructible objects, and mineable rocks.
 - Can restrict selected console commands to the player's assigned creative zone.
 - Prevents skill gains while the player is inside the active creative zone.
-- Prevents world-edge death inside a creative terrain override.
 
 These features receive their state from server remote procedure call (RPC) messages. They do not have local creative-zone configuration entries.
 
@@ -251,23 +243,6 @@ DiscordTools_CreativeInventoryResponse
 ```
 
 The protocol reports the player identity, normal inventory count, ExtraSlots availability and count, and a duplicate-free combined item count. The server can request detailed item entries when required.
-
-### Creative biome override
-
-RPC:
-
-```text
-DiscordTools_CreativeBiomeOverride
-```
-
-PraetorisClient accepts protocol versions 1 through 5. The current protocol supports:
-
-- zone ID, enabled state, center, radius, and biome;
-- spawn suppression;
-- optional source-terrain position;
-- terrain patch coverage;
-- terrain edge falloff and floor height;
-- vegetation-drop suppression.
 
 ### Discord link API
 
