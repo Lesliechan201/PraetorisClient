@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -54,8 +53,6 @@ namespace PraetorisClient.ServerChestFeature
     internal static class ServerChestInventoryGuiUpdateContainerPatch
     {
         private static readonly FieldInfo? CurrentContainerField = AccessTools.Field(typeof(InventoryGui), "m_currentContainer");
-        private static readonly FieldInfo? ElementsField = AccessTools.Field(typeof(InventoryGrid), "m_elements");
-        private static readonly Dictionary<Type, FieldInfo?> ElementGoFields = new();
         private static bool GridWasCompacted;
 
         private static void Postfix(InventoryGui __instance)
@@ -121,37 +118,15 @@ namespace PraetorisClient.ServerChestFeature
 
         private static void SetGridElementsActive(InventoryGrid inventoryGrid, int visibleSlots)
         {
-            IList? elements = GetElements(inventoryGrid);
-            if (elements == null)
-            {
-                return;
-            }
-
+            List<InventoryElement> elements = inventoryGrid.m_elements;
             for (int index = 0; index < elements.Count; index++)
             {
-                GameObject? elementGo = GetElementGameObject(elements[index]);
-                if (elementGo != null)
+                InventoryElement element = elements[index];
+                if (element != null)
                 {
-                    elementGo.SetActive(index < visibleSlots);
+                    element.gameObject.SetActive(index < visibleSlots);
                 }
             }
-        }
-
-        private static IList? GetElements(InventoryGrid inventoryGrid)
-        {
-            return ElementsField != null ? ElementsField.GetValue(inventoryGrid) as IList : null;
-        }
-
-        private static GameObject? GetElementGameObject(object element)
-        {
-            Type elementType = element.GetType();
-            if (!ElementGoFields.TryGetValue(elementType, out FieldInfo? field))
-            {
-                field = AccessTools.Field(elementType, "m_go");
-                ElementGoFields[elementType] = field;
-            }
-
-            return field != null ? field.GetValue(element) as GameObject : null;
         }
     }
 

@@ -72,6 +72,11 @@ namespace PraetorisClient.CreatureOwnership
             return m_name;
         }
 
+        public float GetHoverOffset()
+        {
+            return 0.0f;
+        }
+
         public string GetHoverText()
         {
             if (!_nview.IsValid())

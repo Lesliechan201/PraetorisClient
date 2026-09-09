@@ -45,7 +45,7 @@ namespace PraetorisClient.CreatureOwnership
             int sectorArea = Mathf.CeilToInt(radius / ZoneSystem.c_ZoneSize) + 1;
 
             NearbyZdos.Clear();
-            ZDOMan.instance.FindSectorObjects(ZoneSystem.GetZone(wardPosition), sectorArea, 0, NearbyZdos);
+            ZDOMan.instance.FindSectorObjects(ZoneSystem.GetZone(wardPosition), new SimulationDistance(sectorArea, 0, classic: true), NearbyZdos);
             foreach (ZDO zdo in NearbyZdos)
             {
                 if (zdo.m_uid == wardZdo.m_uid ||

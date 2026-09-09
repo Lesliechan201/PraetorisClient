@@ -264,11 +264,23 @@ The endpoint must return a successful HTTP status when it accepts the code. Prae
 
 ## Build
 
+Use Valheim 1.0 game assemblies and regenerate their publicized assemblies before
+building. Older assemblies can produce a DLL that compiles but fails during
+console-command registration on Valheim 1.0.
+
 ```bash
 dotnet build PraetorisClient.csproj
 ```
 
 The built DLL is written to `bin/Debug/PraetorisClient.dll`.
+
+To build against assemblies copied from a test client, override both paths:
+
+```bash
+dotnet build PraetorisClient.csproj -c Release \
+  -p:VALHEIM_MANAGED=/path/to/Managed \
+  -p:PUBLICIZED_PATH=/path/to/Managed/publicized_assemblies
+```
 
 ## Additional documentation
 

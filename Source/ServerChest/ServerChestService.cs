@@ -211,7 +211,7 @@ namespace PraetorisClient.ServerChestFeature
             List<ZDO> allChests = ServerChest.FindAllZdos();
             foreach (ZDO candidate in allChests)
             {
-                ServerChestLog.Debug("scan zdo=" + candidate.m_uid + " owner=" + ServerChest.OwnerName(candidate) + " ownerLookup=" + ServerChest.OwnerNameLookup(candidate) + " platformId=" + ServerChest.OwnerPlatformId(candidate) + " dataLength=" + candidate.GetString(ZDOVars.s_items).Length.ToString(CultureInfo.InvariantCulture));
+                ServerChestLog.Debug("scan zdo=" + candidate.m_uid + " owner=" + ServerChest.OwnerName(candidate) + " ownerLookup=" + ServerChest.OwnerNameLookup(candidate) + " platformId=" + ServerChest.OwnerPlatformId(candidate) + " dataLength=" + (candidate.GetByteArray(ZDOVars.s_items)?.Length ?? 0).ToString(CultureInfo.InvariantCulture));
             }
 
             List<ZDO> matches = allChests
@@ -332,7 +332,7 @@ namespace PraetorisClient.ServerChestFeature
             {
                 int stackAmount = Math.Min(remaining, maxStack);
                 int chunkBeforeAmount = CountMatchingAmount(inventory, sharedName, item.Quality, worldLevel);
-                ItemDrop.ItemData added = inventory.AddItem(item.PrefabName, stackAmount, item.Quality, 0, 0L, "");
+                ItemDrop.ItemData added = inventory.AddItem(item.PrefabName, stackAmount, item.Quality, 0, 0L, "", cheated: false);
                 int chunkAfterAmount = CountMatchingAmount(inventory, sharedName, item.Quality, worldLevel);
                 int delta = chunkAfterAmount - chunkBeforeAmount;
                 ServerChestLog.Debug("add stack prefab=" + item.PrefabName + " quality=" + item.Quality.ToString(CultureInfo.InvariantCulture) + " requested=" + stackAmount.ToString(CultureInfo.InvariantCulture) + " delta=" + delta.ToString(CultureInfo.InvariantCulture) + " stackIndex=" + stackIndex.ToString(CultureInfo.InvariantCulture) + " stacksNow=" + inventory.NrOfItems().ToString(CultureInfo.InvariantCulture));
