@@ -6,7 +6,6 @@ namespace PraetorisClient
         public const string LinkResult = "DiscordTools_LinkResult";
         public const string CreativeInventoryRequest = "DiscordTools_CreativeInventoryRequest";
         public const string CreativeInventoryResponse = "DiscordTools_CreativeInventoryResponse";
-        public const string CreativeBiomeOverride = "DiscordTools_CreativeBiomeOverride";
         public const string CreativeCommandZoneState = "PraetorisClient_CreativeCommandZoneState";
         public const string SiegePortalEnter = "DiscordTools_SiegePortalEnter";
         public const string RpcProbeRequest = "PraetorisClient_RpcProbe_Request";
