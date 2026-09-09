@@ -231,12 +231,12 @@ namespace PraetorisClient.ServerChestFeature
         internal static Inventory LoadInventoryFromZdo(ZDO zdo)
         {
             Inventory inventory = new("ServerChest", null, MaxColumns, MaxRows);
-            string base64 = zdo.GetString(ZDOVars.s_items);
-            if (!string.IsNullOrEmpty(base64))
+            byte[]? data = zdo.GetByteArray(ZDOVars.s_items);
+            if (data != null && data.Length > 0)
             {
                 try
                 {
-                    inventory.Load(new ZPackage(base64));
+                    inventory.Load(new ZPackage(data));
                 }
                 catch (Exception ex)
                 {
@@ -246,7 +246,7 @@ namespace PraetorisClient.ServerChestFeature
 
             ApplyMaxInventoryShape(inventory);
             CompactInventory(inventory);
-            ServerChestLog.Debug("loaded inventory zdo=" + zdo.m_uid + " stacks=" + inventory.NrOfItems().ToString(CultureInfo.InvariantCulture) + " items=" + inventory.NrOfItemsIncludingStacks().ToString(CultureInfo.InvariantCulture) + " dataLength=" + base64.Length.ToString(CultureInfo.InvariantCulture));
+            ServerChestLog.Debug("loaded inventory zdo=" + zdo.m_uid + " stacks=" + inventory.NrOfItems().ToString(CultureInfo.InvariantCulture) + " items=" + inventory.NrOfItemsIncludingStacks().ToString(CultureInfo.InvariantCulture) + " dataLength=" + (data?.Length ?? 0).ToString(CultureInfo.InvariantCulture));
             return inventory;
         }
 
@@ -255,9 +255,9 @@ namespace PraetorisClient.ServerChestFeature
             CompactInventory(inventory);
             ZPackage package = new();
             inventory.Save(package);
-            string base64 = package.GetBase64();
-            zdo.Set(ZDOVars.s_items, base64);
-            ServerChestLog.Debug("saved inventory zdo=" + zdo.m_uid + " stacks=" + inventory.NrOfItems().ToString(CultureInfo.InvariantCulture) + " items=" + inventory.NrOfItemsIncludingStacks().ToString(CultureInfo.InvariantCulture) + " dataLength=" + base64.Length.ToString(CultureInfo.InvariantCulture));
+            byte[] data = package.GetArray();
+            zdo.Set(ZDOVars.s_items, data);
+            ServerChestLog.Debug("saved inventory zdo=" + zdo.m_uid + " stacks=" + inventory.NrOfItems().ToString(CultureInfo.InvariantCulture) + " items=" + inventory.NrOfItemsIncludingStacks().ToString(CultureInfo.InvariantCulture) + " dataLength=" + data.Length.ToString(CultureInfo.InvariantCulture));
         }
 
         internal static List<ZDO> FindAllZdos()

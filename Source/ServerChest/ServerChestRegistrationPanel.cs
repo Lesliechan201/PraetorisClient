@@ -1,5 +1,6 @@
 using System;
 using GUIFramework;
+using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,26 @@ namespace PraetorisClient.ServerChestFeature
         private GuiInputField? _input;
         private TMP_Text? _topic;
         private ServerChest? _chest;
+
+        internal static bool IsVisible => _instance != null && _instance._panel != null && _instance._panel.activeInHierarchy;
+
+        private void Update()
+        {
+            if (!IsVisible)
+            {
+                return;
+            }
+
+            if (Player.m_localPlayer == null || ZInput.GetKeyDown(KeyCode.Escape))
+            {
+                Hide();
+            }
+            else if (!Console.IsVisible() && (Chat.instance == null || !Chat.instance.HasFocus()) &&
+                     (ZInput.GetKeyDown(KeyCode.Return) || ZInput.GetKeyDown(KeyCode.KeypadEnter)))
+            {
+                Register();
+            }
+        }
 
         internal static void Open(ServerChest chest)
         {
@@ -145,6 +166,15 @@ namespace PraetorisClient.ServerChestFeature
             {
                 text.text = label;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(TextInput), nameof(TextInput.IsVisible))]
+    internal static class ServerChestTextInputVisiblePatch
+    {
+        private static void Postfix(ref bool __result)
+        {
+            __result |= ServerChestRegistrationPanel.IsVisible;
         }
     }
 }

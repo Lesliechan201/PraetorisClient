@@ -29,6 +29,7 @@ namespace PraetorisClient
         private const string ModVersion = "0.1.60";
         private const string Author = "warpalicious";
         private const string ModGUID = Author + "." + ModName;
+        private const string EpicLootGuid = "randyknapp.mods.epicloot";
         private const string LinkApiUrlEnv = "PRAETORISCLIENT_LINK_API_URL";
         private const string BotApiKeyEnv = "PRAETORISCLIENT_BOT_API_KEY";
 
@@ -89,13 +90,15 @@ namespace PraetorisClient
 
         public void Awake()
         {
-            // Leslie EpicLoot additions
-            PrefabManager.OnPrefabsRegistered += () => { if (Loaded) return; HumanoidFactory.Create(); Loaded = true; };
-            PrefabManager.OnPrefabsRegistered += () => InfusionVFX.Init();
-            MagicEffects.Init();
-            SERegistry.RegisterStatusEffects();
-            EpicLootAPI.EpicLoot.RegisterAll();
-            //
+            bool epicLootLoaded = Chainloader.PluginInfos.ContainsKey(EpicLootGuid);
+            if (epicLootLoaded)
+            {
+                InitializeEpicLoot();
+            }
+            else
+            {
+                Log.LogInfo("Epic Loot is not loaded. Epic Loot integration is disabled.");
+            }
 
             Instance = this;
             BindConfig();
@@ -113,10 +116,44 @@ namespace PraetorisClient
             SiegePortalTestCommand.Register();
             FrameTimeMonitor.Initialize();
             RpcTraceTelemetry.Initialize();
-            _harmony.PatchAll(Assembly.GetExecutingAssembly());
+            ApplyHarmonyPatches(epicLootLoaded);
             ProtectedLocationNoBuild.ApplyToLoadedLocations();
             SocketMetricPatches.ApplyManualPatches(_harmony);
             SetupWatcher();
+        }
+
+        private static void InitializeEpicLoot()
+        {
+            PrefabManager.OnPrefabsRegistered += () =>
+            {
+                if (Loaded)
+                {
+                    return;
+                }
+
+                HumanoidFactory.Create();
+                Loaded = true;
+            };
+            PrefabManager.OnPrefabsRegistered += InfusionVFX.Init;
+            MagicEffects.Init();
+            SERegistry.RegisterStatusEffects();
+            EpicLootAPI.EpicLoot.RegisterAll();
+        }
+
+        private void ApplyHarmonyPatches(bool epicLootLoaded)
+        {
+            foreach (Type type in AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly()))
+            {
+                string typeNamespace = type.Namespace ?? "";
+                if (!epicLootLoaded &&
+                    (typeNamespace.StartsWith("EpicLootLeslieAlphaTest", StringComparison.Ordinal) ||
+                     typeNamespace.StartsWith("PraetorisClient.EpicLootFeature", StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                _harmony.CreateClassProcessor(type).Patch();
+            }
         }
 
         private void Update()
