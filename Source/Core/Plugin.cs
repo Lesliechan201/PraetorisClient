@@ -83,6 +83,7 @@ namespace PraetorisClient
         internal static ConfigEntry<bool> ShowAlternateBiomeName = null!;
         internal static ConfigEntry<bool> SpawnTempleTrophiesEnabled = null!;
         internal static ConfigEntry<bool> SerpentSpawnExclusionEnabled = null!;
+        internal static ConfigEntry<int> GammeltrollRespawnMinutes = null!;
         internal static ConfigEntry<float> SerpentSpawnExclusionRadius = null!;
         internal static ConfigEntry<SerpentSpawnExclusion.Center> SerpentSpawnExclusionCenter = null!;
         internal static ConfigEntry<bool> SpawnIslandWardsEnabled = null!;
@@ -293,6 +294,8 @@ namespace PraetorisClient
 
         private void BindConfig()
         {
+            GammeltrollRespawnMinutes = Config.Bind("Gammeltroll", "RespawnMinutes", 1440,
+                SyncedIntDescription("Respawn interval in minutes for Spawner_TrollFrost, measured from when the previous troll was last observed alive. Existing saved spawners are included; living trolls are preserved. Old spent spawners may become eligible immediately. Zero restores spawn-once behavior. Applies on the next spawner check. Install PraetorisClient on the server and all clients.", 0, int.MaxValue));
             SerpentSpawnExclusionEnabled = Config.Bind("SerpentSpawnExclusion", "Enabled", true,
                 SyncedDescription("Blocks normal Serpent world spawns inside the exclusion radius. Does not remove existing creatures or block direct console spawns. All spawning peers must have this mod installed."));
             SerpentSpawnExclusionRadius = Config.Bind("SerpentSpawnExclusion", "Radius", 500f,
